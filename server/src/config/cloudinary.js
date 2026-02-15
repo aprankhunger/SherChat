@@ -15,9 +15,14 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'sherchat-stickers',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    format: 'webp', // Convert all to webp for smaller size
     transformation: [
-      { width: 256, height: 256, crop: 'limit' },
-      { quality: 'auto' },
+      { background: 'transparent' }, // Keep transparency
+      { effect: 'background_removal' }, // Auto remove background
+      { width: 256, height: 256, crop: 'limit' }, // Resize to max 256x256
+      { effect: 'trim' }, // Trim empty space around sticker
+      { quality: 'auto:low' }, // Aggressive compression
+      { fetch_format: 'auto' }, // Serve best format for browser
     ],
   },
 });
