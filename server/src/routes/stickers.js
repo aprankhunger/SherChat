@@ -118,16 +118,20 @@ router.get('/packs/:packId', auth, (req, res) => {
   res.json({ pack });
 });
 
-// Default stickers data (seeded once)
+// Default stickers data (seeded once) - Using Twemoji (Twitter's open source emoji)
 const defaultStickersData = [
-  { name: 'Thumbs Up', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/thumbs_up.png' },
-  { name: 'Heart', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/heart.png' },
-  { name: 'Laugh', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/laugh.png' },
-  { name: 'Sad', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/sad.png' },
-  { name: 'Angry', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/angry.png' },
-  { name: 'Surprised', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/surprised.png' },
-  { name: 'Cool', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/cool.png' },
-  { name: 'Wink', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/wink.png' },
+  { name: 'Thumbs Up', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f44d.svg' },
+  { name: 'Heart', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/2764.svg' },
+  { name: 'Laugh', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f602.svg' },
+  { name: 'Sad', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f622.svg' },
+  { name: 'Angry', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f621.svg' },
+  { name: 'Surprised', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f632.svg' },
+  { name: 'Cool', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f60e.svg' },
+  { name: 'Wink', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f609.svg' },
+  { name: 'Fire', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f525.svg' },
+  { name: 'Party', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f389.svg' },
+  { name: 'Star Eyes', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f929.svg' },
+  { name: 'Clap', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f44f.svg' },
 ];
 
 // Seed default stickers (run once on startup or call manually)
