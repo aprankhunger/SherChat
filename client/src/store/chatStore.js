@@ -120,13 +120,17 @@ export const useChatStore = create((set, get) => ({
 
   // Custom stickers
   customStickers: [],
+  defaultStickers: [],
   uploadingSticker: false,
 
-  // Fetch custom stickers
+  // Fetch custom stickers + default stickers
   fetchCustomStickers: async () => {
     try {
       const { data } = await api.get('/stickers/my-stickers');
-      set({ customStickers: data.stickers });
+      set({ 
+        customStickers: data.stickers,
+        defaultStickers: data.defaultStickers || [],
+      });
     } catch (error) {
       console.error('Failed to fetch custom stickers:', error);
     }

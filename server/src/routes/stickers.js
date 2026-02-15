@@ -118,11 +118,58 @@ router.get('/packs/:packId', auth, (req, res) => {
   res.json({ pack });
 });
 
-// Get user's custom stickers
+// Default stickers data (seeded once)
+const defaultStickersData = [
+  { name: 'Thumbs Up', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/thumbs_up.png' },
+  { name: 'Heart', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/heart.png' },
+  { name: 'Laugh', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/laugh.png' },
+  { name: 'Sad', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/sad.png' },
+  { name: 'Angry', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/angry.png' },
+  { name: 'Surprised', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/surprised.png' },
+  { name: 'Cool', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/cool.png' },
+  { name: 'Wink', url: 'https://cdn.jsdelivr.net/gh/niconicomonkey/stickers@main/wink.png' },
+];
+
+// Seed default stickers (run once on startup or call manually)
+router.post('/seed-defaults', async (req, res) => {
+  try {
+    // Check if defaults already exist
+    const existingDefaults = await Sticker.countDocuments({ isDefault: true });
+    if (existingDefaults > 0) {
+      return res.json({ message: 'Default stickers already seeded', count: existingDefaults });
+    }
+
+    // Create default stickers
+    const stickers = await Sticker.insertMany(
+      defaultStickersData.map(s => ({
+        name: s.name,
+        url: s.url,
+        isDefault: true,
+        user: null,
+        publicId: '',
+      }))
+    );
+
+    res.status(201).json({ message: 'Default stickers seeded', count: stickers.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's custom stickers + default stickers
 router.get('/my-stickers', auth, async (req, res) => {
   try {
-    const stickers = await Sticker.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json({ stickers });
+    // Get both user's stickers and default stickers
+    const [userStickers, defaultStickers] = await Promise.all([
+      Sticker.find({ user: req.user._id }).sort({ createdAt: -1 }),
+      Sticker.find({ isDefault: true }).sort({ name: 1 }),
+    ]);
+    
+    // Combine: user stickers first, then defaults
+    res.json({ 
+      stickers: userStickers,
+      defaultStickers: defaultStickers,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -149,20 +196,23 @@ router.post('/upload', auth, upload.single('sticker'), async (req, res) => {
   }
 });
 
-// Delete custom sticker
+// Delete custom sticker (not default ones)
 router.delete('/:stickerId', auth, async (req, res) => {
   try {
     const sticker = await Sticker.findOne({
       _id: req.params.stickerId,
       user: req.user._id,
+      isDefault: { $ne: true }, // Can't delete default stickers
     });
 
     if (!sticker) {
-      return res.status(404).json({ error: 'Sticker not found' });
+      return res.status(404).json({ error: 'Sticker not found or cannot be deleted' });
     }
 
     // Delete from Cloudinary
-    await cloudinary.uploader.destroy(sticker.publicId);
+    if (sticker.publicId) {
+      await cloudinary.uploader.destroy(sticker.publicId);
+    }
 
     // Delete from database
     await sticker.deleteOne();

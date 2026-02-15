@@ -5,7 +5,7 @@ const stickerSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null, // null for default stickers available to all
     },
     name: {
       type: String,
@@ -18,12 +18,17 @@ const stickerSchema = new mongoose.Schema(
     },
     publicId: {
       type: String,
-      required: true,
+      default: '', // Empty for default stickers (external URLs)
+    },
+    isDefault: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
 );
 
 stickerSchema.index({ user: 1, createdAt: -1 });
+stickerSchema.index({ isDefault: 1 });
 
 module.exports = mongoose.model('Sticker', stickerSchema);

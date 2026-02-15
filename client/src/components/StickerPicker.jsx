@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 export default function StickerPicker({ onSelect, onClose }) {
   const { 
     stickerPacks, 
-    customStickers, 
+    customStickers,
+    defaultStickers,
     fetchCustomStickers, 
     uploadSticker, 
     deleteSticker,
@@ -126,7 +127,7 @@ export default function StickerPicker({ onSelect, onClose }) {
               className="hidden"
             />
 
-            {/* Custom stickers */}
+            {/* User's custom stickers */}
             {customStickers.map((sticker) => (
               <div key={sticker._id} className="relative group">
                 <button
@@ -170,7 +171,32 @@ export default function StickerPicker({ onSelect, onClose }) {
               </div>
             ))}
 
-            {customStickers.length === 0 && (
+            {/* Divider if both custom and default stickers exist */}
+            {customStickers.length > 0 && defaultStickers.length > 0 && (
+              <div className="col-span-4 flex items-center gap-2 py-1">
+                <div className="flex-1 h-px bg-dark-700" />
+                <span className="text-[10px] text-dark-500">Default Pack</span>
+                <div className="flex-1 h-px bg-dark-700" />
+              </div>
+            )}
+
+            {/* Default stickers (no delete button) */}
+            {defaultStickers.map((sticker) => (
+              <button
+                key={sticker._id}
+                onClick={() => onSelect({ url: sticker.url, name: sticker.name })}
+                className="flex items-center justify-center h-16 w-full rounded-xl hover:bg-dark-800 active:scale-90 transition-all overflow-hidden"
+                title={sticker.name}
+              >
+                <img 
+                  src={sticker.url} 
+                  alt={sticker.name}
+                  className="max-h-14 max-w-14 object-contain"
+                />
+              </button>
+            ))}
+
+            {customStickers.length === 0 && defaultStickers.length === 0 && (
               <div className="col-span-3 flex items-center justify-center h-16 text-dark-500 text-sm">
                 Upload your own stickers!
               </div>
