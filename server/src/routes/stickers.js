@@ -1,5 +1,7 @@
 const express = require('express');
 const auth = require('../middleware/auth');
+const Sticker = require('../models/Sticker');
+const { upload, cloudinary } = require('../config/cloudinary');
 
 const router = express.Router();
 
@@ -114,6 +116,61 @@ router.get('/packs/:packId', auth, (req, res) => {
     return res.status(404).json({ error: 'Sticker pack not found' });
   }
   res.json({ pack });
+});
+
+// Get user's custom stickers
+router.get('/my-stickers', auth, async (req, res) => {
+  try {
+    const stickers = await Sticker.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json({ stickers });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload custom sticker
+router.post('/upload', auth, upload.single('sticker'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const sticker = new Sticker({
+      user: req.user._id,
+      name: req.body.name || 'Custom Sticker',
+      url: req.file.path,
+      publicId: req.file.filename,
+    });
+
+    await sticker.save();
+    res.status(201).json({ sticker });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete custom sticker
+router.delete('/:stickerId', auth, async (req, res) => {
+  try {
+    const sticker = await Sticker.findOne({
+      _id: req.params.stickerId,
+      user: req.user._id,
+    });
+
+    if (!sticker) {
+      return res.status(404).json({ error: 'Sticker not found' });
+    }
+
+    // Delete from Cloudinary
+    await cloudinary.uploader.destroy(sticker.publicId);
+
+    // Delete from database
+    await sticker.deleteOne();
+
+    res.json({ message: 'Sticker deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

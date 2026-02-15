@@ -59,11 +59,13 @@ export default function ChatWindow({ room, onBack, user }) {
   const handleSendSticker = (sticker) => {
     const socket = getSocket();
     if (socket) {
+      // Custom stickers have a url property, built-in have emoji
+      const isCustom = sticker.url && sticker.url.startsWith('http');
       socket.emit('message:send', {
         roomId: room._id,
-        content: sticker.emoji,
+        content: isCustom ? sticker.name : sticker.emoji,
         type: 'sticker',
-        stickerUrl: sticker.emoji,
+        stickerUrl: isCustom ? sticker.url : sticker.emoji,
       });
     }
     setShowStickers(false);

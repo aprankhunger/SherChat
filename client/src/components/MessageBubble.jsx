@@ -7,6 +7,7 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
   };
 
   const isSticker = message.type === 'sticker';
+  const isCustomSticker = isSticker && message.stickerUrl?.startsWith('http');
 
   return (
     <div
@@ -34,9 +35,17 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
         {isSticker ? (
           /* Sticker message */
           <div className="sticker-pop">
-            <span className="text-6xl leading-none block py-1">
-              {message.content}
-            </span>
+            {isCustomSticker ? (
+              <img 
+                src={message.stickerUrl} 
+                alt="Sticker"
+                className="max-w-24 max-h-24 object-contain"
+              />
+            ) : (
+              <span className="text-6xl leading-none block py-1">
+                {message.content}
+              </span>
+            )}
             <p
               className={`text-[10px] text-dark-500 mt-1 ${
                 isOwn ? 'text-right' : 'text-left'

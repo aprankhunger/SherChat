@@ -118,6 +118,56 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  // Custom stickers
+  customStickers: [],
+  uploadingSticker: false,
+
+  // Fetch custom stickers
+  fetchCustomStickers: async () => {
+    try {
+      const { data } = await api.get('/stickers/my-stickers');
+      set({ customStickers: data.stickers });
+    } catch (error) {
+      console.error('Failed to fetch custom stickers:', error);
+    }
+  },
+
+  // Upload custom sticker
+  uploadSticker: async (file, name) => {
+    set({ uploadingSticker: true });
+    try {
+      const formData = new FormData();
+      formData.append('sticker', file);
+      formData.append('name', name || 'Custom Sticker');
+      
+      const { data } = await api.post('/stickers/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      set((state) => ({
+        customStickers: [data.sticker, ...state.customStickers],
+        uploadingSticker: false,
+      }));
+      return { success: true };
+    } catch (error) {
+      set({ uploadingSticker: false });
+      return { success: false, error: error.response?.data?.error || 'Upload failed' };
+    }
+  },
+
+  // Delete custom sticker
+  deleteSticker: async (stickerId) => {
+    try {
+      await api.delete(`/stickers/${stickerId}`);
+      set((state) => ({
+        customStickers: state.customStickers.filter((s) => s._id !== stickerId),
+      }));
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Delete failed' };
+    }
+  },
+
   // Update room's last message in the list
   updateRoomLastMessage: (roomId, message) => {
     set((state) => ({
