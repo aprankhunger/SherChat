@@ -6,12 +6,19 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const stickerRoutes = require('./routes/stickers');
 const { setupSocket } = require('./socket');
 
-dotenv.config();
+// Load .env from the server directory regardless of CWD
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+// Ensure JWT_SECRET always has a value
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'sherchat_default_secret_key';
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -43,17 +50,31 @@ setupSocket(io);
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sherchat';
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
+async function startServer() {
+  try {
+    let mongoUri = process.env.MONGODB_URI;
+
+    // Try connecting to the configured MongoDB first
+    try {
+      await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
+      console.log('✅ Connected to MongoDB');
+    } catch {
+      // Fall back to in-memory MongoDB
+      console.log('⚠️  MongoDB not available, starting in-memory database...');
+      const mongod = await MongoMemoryServer.create();
+      mongoUri = mongod.getUri();
+      await mongoose.connect(mongoUri);
+      console.log('✅ Connected to in-memory MongoDB');
+    }
+
     server.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+  } catch (err) {
+    console.error('❌ Server start error:', err.message);
     process.exit(1);
-  });
+  }
+}
+
+startServer();
