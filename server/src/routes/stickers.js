@@ -118,20 +118,20 @@ router.get('/packs/:packId', auth, (req, res) => {
   res.json({ pack });
 });
 
-// Default stickers data (seeded once) - Using Twemoji (Twitter's open source emoji)
+// Default stickers data (seeded once) - Custom sticker pack
 const defaultStickersData = [
-  { name: 'Thumbs Up', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f44d.svg' },
-  { name: 'Heart', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/2764.svg' },
-  { name: 'Laugh', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f602.svg' },
-  { name: 'Sad', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f622.svg' },
-  { name: 'Angry', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f621.svg' },
-  { name: 'Surprised', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f632.svg' },
-  { name: 'Cool', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f60e.svg' },
-  { name: 'Wink', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f609.svg' },
-  { name: 'Fire', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f525.svg' },
-  { name: 'Party', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f389.svg' },
-  { name: 'Star Eyes', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f929.svg' },
-  { name: 'Clap', url: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f44f.svg' },
+  { name: 'Sticker 1', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-1_zbsff5.png' },
+  { name: 'Sticker 2', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-2_jpdfu1.png' },
+  { name: 'Sticker 3', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-3_b1sp99.png' },
+  { name: 'Sticker 4', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-2-column-1_dupvo1.png' },
+  { name: 'Sticker 5', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-2-column-2_sldrql.png' },
+  { name: 'Sticker 6', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-2-column-3_s8habz.png' },
+  { name: 'Sticker 7', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-3-column-1_vvqwcm.png' },
+  { name: 'Sticker 8', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-3-column-2_rqnyja.png' },
+  { name: 'Sticker 9', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-3-column-3_hzdnr9.png' },
+  { name: 'Sticker 10', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-4-column-1_r6mmkq.png' },
+  { name: 'Sticker 11', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-4-column-2_hqgrcc.png' },
+  { name: 'Sticker 12', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198783/row-4-column-3_diinhb.png' },
 ];
 
 // Seed default stickers (run once on startup or call manually)
@@ -155,6 +155,29 @@ router.post('/seed-defaults', async (req, res) => {
     );
 
     res.status(201).json({ message: 'Default stickers seeded', count: stickers.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reset and re-seed default stickers
+router.post('/reset-defaults', async (req, res) => {
+  try {
+    // Delete all existing defaults
+    await Sticker.deleteMany({ isDefault: true });
+
+    // Create new default stickers
+    const stickers = await Sticker.insertMany(
+      defaultStickersData.map(s => ({
+        name: s.name,
+        url: s.url,
+        isDefault: true,
+        user: null,
+        publicId: '',
+      }))
+    );
+
+    res.status(201).json({ message: 'Default stickers reset', count: stickers.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
