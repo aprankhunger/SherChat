@@ -120,7 +120,7 @@ router.get('/packs/:packId', auth, (req, res) => {
 
 // Default stickers data (seeded once) - Custom sticker pack
 const defaultStickersData = [
-  { name: 'Sticker 1', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-1_zbsff5.png' },
+  { name: 'Sticker 1', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-1_placeholder.png' },
   { name: 'Sticker 2', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-2_jpdfu1.png' },
   { name: 'Sticker 3', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-1-column-3_b1sp99.png' },
   { name: 'Sticker 4', url: 'https://res.cloudinary.com/dgqplqxwz/image/upload/v1771198782/row-2-column-1_dupvo1.png' },
