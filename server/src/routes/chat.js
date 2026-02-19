@@ -74,16 +74,24 @@ router.get('/rooms/:roomId/messages', auth, async (req, res) => {
   try {
     const { roomId } = req.params;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
 
-    const messages = await Message.find({ room: roomId })
-      .populate('sender', '-password')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const [messages, total] = await Promise.all([
+      Message.find({ room: roomId })
+        .populate('sender', '-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Message.countDocuments({ room: roomId }),
+    ]);
 
-    res.json({ messages: messages.reverse() });
+    res.json({ 
+      messages: messages.reverse(),
+      total,
+      page,
+      hasMore: skip + messages.length < total,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

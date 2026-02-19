@@ -6,7 +6,7 @@ import StickerPicker from './StickerPicker';
 import TypingIndicator from './TypingIndicator';
 
 export default function ChatWindow({ room, onBack, user }) {
-  const { messages, fetchMessages, loadingMessages, typingUsers } = useChatStore();
+  const { messages, fetchMessages, loadingMessages, typingUsers, loadMoreMessages, hasMoreMessages, loadingMoreMessages } = useChatStore();
   const [text, setText] = useState('');
   const [showStickers, setShowStickers] = useState(false);
   const messagesEndRef = useRef(null);
@@ -136,17 +136,46 @@ export default function ChatWindow({ room, onBack, user }) {
             </div>
           </div>
         ) : (
-          messages.map((msg, idx) => (
-            <MessageBubble
-              key={msg._id || idx}
-              message={msg}
-              isOwn={msg.sender?._id === user?._id}
-              showAvatar={
-                idx === 0 ||
-                messages[idx - 1]?.sender?._id !== msg.sender?._id
-              }
-            />
-          ))
+          <>
+            {/* Load more button */}
+            {hasMoreMessages && (
+              <div className="flex justify-center py-2">
+                <button
+                  onClick={() => loadMoreMessages(room._id)}
+                  disabled={loadingMoreMessages}
+                  className="px-4 py-1.5 text-xs bg-dark-800 hover:bg-dark-700 text-dark-300 rounded-full transition-colors flex items-center gap-2"
+                >
+                  {loadingMoreMessages ? (
+                    <>
+                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                      Load older messages
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+            {messages.map((msg, idx) => (
+              <MessageBubble
+                key={msg._id || idx}
+                message={msg}
+                isOwn={msg.sender?._id === user?._id}
+                showAvatar={
+                  idx === 0 ||
+                  messages[idx - 1]?.sender?._id !== msg.sender?._id
+                }
+              />
+            ))}
+          </>
         )}
 
         {typingNames.length > 0 && <TypingIndicator names={typingNames} />}

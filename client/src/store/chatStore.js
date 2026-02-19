@@ -11,6 +11,9 @@ export const useChatStore = create((set, get) => ({
   stickerPacks: [],
   loadingRooms: false,
   loadingMessages: false,
+  loadingMoreMessages: false,
+  hasMoreMessages: false,
+  messagesPage: 1,
 
   // Fetch chat rooms
   fetchRooms: async () => {
@@ -26,18 +29,44 @@ export const useChatStore = create((set, get) => ({
 
   // Set active room
   setActiveRoom: (room) => {
-    set({ activeRoom: room, messages: [] });
+    set({ activeRoom: room, messages: [], messagesPage: 1, hasMoreMessages: false });
   },
 
-  // Fetch messages for a room
+  // Fetch messages for a room (latest messages)
   fetchMessages: async (roomId) => {
-    set({ loadingMessages: true });
+    set({ loadingMessages: true, messagesPage: 1 });
     try {
-      const { data } = await api.get(`/chat/rooms/${roomId}/messages`);
-      set({ messages: data.messages, loadingMessages: false });
+      const { data } = await api.get(`/chat/rooms/${roomId}/messages?page=1&limit=100`);
+      set({ 
+        messages: data.messages, 
+        loadingMessages: false,
+        hasMoreMessages: data.hasMore,
+        messagesPage: 1,
+      });
     } catch (error) {
       set({ loadingMessages: false });
       console.error('Failed to fetch messages:', error);
+    }
+  },
+
+  // Load older messages (pagination)
+  loadMoreMessages: async (roomId) => {
+    const { messagesPage, loadingMoreMessages, hasMoreMessages } = get();
+    if (loadingMoreMessages || !hasMoreMessages) return;
+
+    set({ loadingMoreMessages: true });
+    try {
+      const nextPage = messagesPage + 1;
+      const { data } = await api.get(`/chat/rooms/${roomId}/messages?page=${nextPage}&limit=100`);
+      set((state) => ({ 
+        messages: [...data.messages, ...state.messages],
+        loadingMoreMessages: false,
+        hasMoreMessages: data.hasMore,
+        messagesPage: nextPage,
+      }));
+    } catch (error) {
+      set({ loadingMoreMessages: false });
+      console.error('Failed to load more messages:', error);
     }
   },
 
